@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Summary</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'summary.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+    <div class="container1">
+    <nav>
+    <ul>
+        <li class="current"><a href="{% url 'home' %}">Home</a></li>
+       
+        <li><a href="{% url 'manage_expenses' %}">Add Expenses</a></li>
+        <li><a href="{% url 'expense_list' %}">Manage Expenses</a></li>
+        {% if user.is_authenticated %}
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        {% else %}
+            <li><a href="{% url 'login' %}">Login</a></li>
+        {% endif %}
+        <li><a href="{% url 'summary' %}">Summary</a></li>
+    </ul>
+</nav>
+</div>
+</header>
+    <div class="container">
+        <h1>Expense Summary</h1>
+        <div>
+            <h2>Total Expenses</h2>
+            <p>Number of Expenses: {{ total_expenses.total_count }}</p>
+            <p>Total Amount Spent: ₹{{ total_expenses.total_amount }}</p>
+        </div>
+        <br>
+        <div class="chart-container">
+            <div class="pie-chart">
+                <h2>Expenses by Category</h2>
+                <canvas id="categoryChart"></canvas>
+            </div>
+            <div class="bar-chart">
+                <h2>Expenses Count by Category</h2>
+                <canvas id="countChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var allData = {
+                labels: [],
+                amounts: [],
+                counts: []
+            };
+
+            // Populate data from Django context
+            {% for category in expenses_by_category %}
+                allData.labels.push("{{ category.expense_type|escapejs }}");
+                allData.amounts.push({{ category.category_amount }});
+                allData.counts.push({{ category.category_count }});
+            {% endfor %}
+
+            // Initialize charts
+            var ctxCategory = document.getElementById('categoryChart').getContext('2d');
+            var categoryChart = new Chart(ctxCategory, {
+                type: 'pie',
+                data: {
+                    labels: allData.labels,
+                    datasets: [{
+                        label: 'Amount Spent',
+                        data: allData.amounts,
+                        backgroundColor: generateColors(allData.labels.length),
+                        borderColor: generateColors(allData.labels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += 'Rs. ' + context.parsed;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            var ctxCount = document.getElementById('countChart').getContext('2d');
+            var countChart = new Chart(ctxCount, {
+                type: 'bar',
+                data: {
+                    labels: allData.labels,
+                    datasets: [{
+                        label: 'Number of Expenses',
+                        data: allData.counts,
+                        backgroundColor: generateColors(allData.labels.length),
+                        borderColor: generateColors(allData.labels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 14
+                                },
+                                callback: function(value) {
+                                    return Number.isInteger(value) ? value : '';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += Math.round(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            function generateColors(num) {
+                const colors = [];
+                const baseColors = [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)'
+                ];
+
+                for (let i = 0; i < num; i++) {
+                    colors.push(baseColors[i % baseColors.length]);
+                }
+                return colors;
+            }
+        });
+    </script>
+</body>
+</html>

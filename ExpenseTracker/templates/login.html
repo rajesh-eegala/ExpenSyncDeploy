@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'test.css' %}">
+    <style>
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+        }
+        .valid {
+            border-color: green;
+        }
+        .invalid {
+            border-color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section id="main">
+            <h1>Login</h1>
+            <form id="loginForm" method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                    <span class="error-message" id="usernameError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                    <span class="error-message" id="passwordError"></span>
+                </div>
+                <button type="submit" class="button">Login</button>
+            </form>
+        </section>
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <footer>
+        <p>Expense Tracker &copy; 2024</p>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('loginForm');
+            const username = document.getElementById('username');
+            const password = document.getElementById('password');
+
+            const usernameError = document.getElementById('usernameError');
+            const passwordError = document.getElementById('passwordError');
+
+            function validateInput(inputElement, errorElement, validationFunction, errorMessage) {
+                if (validationFunction(inputElement.value)) {
+                    errorElement.textContent = '';
+                    inputElement.classList.add('valid');
+                    inputElement.classList.remove('invalid');
+                } else {
+                    errorElement.textContent = errorMessage;
+                    inputElement.classList.add('invalid');
+                    inputElement.classList.remove('valid');
+                }
+            }
+            function validateInput(inputElement, errorElement, validateFn, errorMessage) {
+                if (validateFn(inputElement.value)) {
+                    errorElement.textContent = ''; // Clear error message if valid
+                    inputElement.classList.remove('invalid'); // Remove invalid class if valid
+                } else {
+                    errorElement.textContent = errorMessage; // Show error message if invalid
+                    inputElement.classList.add('invalid'); // Add invalid class for styling
+                }
+            }
+            
+            // Function to check the password against multiple criteria
+            function validatePassword(password) {
+                const minLength = 6;
+                const hasUpperCase = /[A-Z]/.test(password);
+                const hasNumber = /[0-9]/.test(password);
+                const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+                return password.length >= minLength && hasUpperCase && hasNumber && hasSpecialChar;
+            }
+
+            username.addEventListener('input', () => {
+                validateInput(username, usernameError, value => value.trim() !== '', 'Username is required.');
+            });
+
+            // Add event listener to password input field
+            password.addEventListener('input', () => {
+                validateInput(password, passwordError, value => validatePassword(value), 
+                    'Password must be at least 6 characters long, include at least one uppercase letter, one number, and one special character.');
+            });
+
+            form.addEventListener('submit', (e) => {
+                if (username.classList.contains('invalid') || password.classList.contains('invalid')) {
+                    e.preventDefault();
+                    alert('Please fix the errors in the form.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
