@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-&$+z!ch1(ttps0_3%g%m6#sz+79j*%5xq1olhsw)rf_q3uli$m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','0.0.0.0']
+ALLOWED_HOSTS = ['127.0.0.1','0.0.0.0','expensync.rajeshe.site']
 
 # URL to redirect users to if they are not logged in
 LOGIN_URL = '/login/'  
@@ -87,10 +87,10 @@ WSGI_APPLICATION = 'ExpenseTracker.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Expense_tracker',
-        'USER': 'root',
-        'PASSWORD': 'Rajeshcentos@12',
-        'HOST': 'localhost',  # or the hostname where your MySQL server is running
+        'NAME': 'userdata',
+        'USER': 'admin',
+        'PASSWORD': 'Rajeshcentos12',
+        'HOST': 'userdata.cxayw68ko3pr.us-east-1.rds.amazonaws.com',  # or the hostname where your MySQL server is running
         'PORT': '3306',      # or the port on which your MySQL server is listening
     }
 }
